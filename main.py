@@ -71,7 +71,7 @@ def get_dados():
     return {"status": "Dados salvos no banco de dados SQLite com sucesso."}
 
 @app.get("/consultar_dados")
-def consultar_dados(limite: int = 100):
+def consultar_dados():
     conn = sqlite3.connect("afogamentos.db")
     cursor = conn.cursor()
     
@@ -84,10 +84,9 @@ def consultar_dados(limite: int = 100):
         sexo, 
         "faixa etária", 
         Óbitos 
-    FROM obitos 
-    LIMIT ?
+    FROM obitos
     """
-    cursor.execute(query, (limite,))
+    cursor.execute(query)
     colunas = [desc[0] for desc in cursor.description]
     resultados = cursor.fetchall()
     conn.close()
