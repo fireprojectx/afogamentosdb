@@ -51,7 +51,7 @@ def get_dados():
             df[['Codigo municipio', 'municipio']] = df['Município'].str.extract(r'"?(\d+)"?\s*(.*)')
             df.drop(columns=["Município"], inplace=True)
             df_long = df.melt(id_vars=["Codigo municipio", "municipio"], var_name="mes_ano", value_name="Óbitos")
-            df_long["mes_ano"] = df_long["mes_ano"].str.replace("..", "", regex=False)
+            df_long["mes_ano"] = df_long["mes_ano"].str.replace(r"[.]{2}", "", regex=True)
             df_long[["mês", "ano"]] = df_long["mes_ano"].str.extract(r'(\w+)\/(\d{4})')
             df_long = df_long.dropna(subset=["Codigo municipio", "municipio"])
             df_long["Óbitos"] = pd.to_numeric(df_long["Óbitos"], errors="coerce").fillna(0).astype(int)
@@ -69,3 +69,28 @@ def get_dados():
     conn.close()
 
     return {"status": "Dados salvos no banco de dados SQLite com sucesso."}
+
+@app.get("/consultar_dados")
+def consultar_dados(limite: int = 100):
+    conn = sqlite3.connect("afogamentos.db")
+    cursor = conn.cursor()
+    
+    query = """
+    SELECT 
+        "Codigo municipio", 
+        municipio, 
+        mês, 
+        ano, 
+        sexo, 
+        "faixa etária", 
+        Óbitos 
+    FROM obitos 
+    LIMIT ?
+    """
+    cursor.execute(query, (limite,))
+    colunas = [desc[0] for desc in cursor.description]
+    resultados = cursor.fetchall()
+    conn.close()
+    
+    dados = [dict(zip(colunas, linha)) for linha in resultados]
+    return {"dados": dados}
