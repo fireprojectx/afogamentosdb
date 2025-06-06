@@ -1,11 +1,14 @@
-
 from fastapi import FastAPI
 import pandas as pd
 import requests
-import sqlite3
 from io import StringIO
+import os
+from sqlalchemy import create_engine
 
 app = FastAPI()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
 @app.get("/dados_afogamentos")
 def get_dados():
@@ -64,32 +67,11 @@ def get_dados():
             continue
 
     df_total = pd.concat(todos_dfs, ignore_index=True)
-    conn = sqlite3.connect("afogamentos.db")
-    df_total.to_sql("obitos", conn, if_exists="replace", index=False)
-    conn.close()
+    df_total.to_sql("obitos", engine, if_exists="replace", index=False)
 
-    return {"status": "Dados salvos no banco de dados SQLite com sucesso."}
+    return {"status": "Dados salvos no banco de dados PostgreSQL com sucesso."}
 
 @app.get("/consultar_dados")
 def consultar_dados():
-    conn = sqlite3.connect("afogamentos.db")
-    cursor = conn.cursor()
-    
-    query = """
-    SELECT 
-        "Codigo municipio", 
-        municipio, 
-        mês, 
-        ano, 
-        sexo, 
-        "faixa etária", 
-        Óbitos 
-    FROM obitos
-    """
-    cursor.execute(query)
-    colunas = [desc[0] for desc in cursor.description]
-    resultados = cursor.fetchall()
-    conn.close()
-    
-    dados = [dict(zip(colunas, linha)) for linha in resultados]
-    return {"dados": dados}
+    df = pd.read_sql("SELECT * FROM obitos", engine)
+    return {"dados": df.to_dict(orient="records")}
