@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import Response
 import pandas as pd
 import requests
 from io import StringIO
@@ -72,6 +73,17 @@ def get_dados():
     return {"status": "Dados salvos no banco de dados PostgreSQL com sucesso."}
 
 @app.get("/consultar_dados")
-def consultar_dados():
-    df = pd.read_sql("SELECT * FROM obitos", engine)
+def consultar_dados(limite: int = 100, offset: int = 0):
+    query = f"SELECT * FROM obitos LIMIT {limite} OFFSET {offset}"
+    df = pd.read_sql(query, engine)
     return {"dados": df.to_dict(orient="records")}
+
+
+@app.get("/exportar_csv")
+def exportar_csv():
+    df = pd.read_sql("SELECT * FROM obitos", engine)
+    return Response(
+        content=df.to_csv(index=False),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=obitos.csv"}
+    )
