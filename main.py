@@ -87,3 +87,10 @@ def exportar_csv():
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=obitos.csv"}
     )
+
+@app.get("/total_obitos")
+def soma_obitos():
+    with engine.connect() as conn:
+        result = conn.execute(text('SELECT SUM("Óbitos") FROM obitos'))
+        soma = result.scalar()
+    return JSONResponse(content={"total_obitos": soma})
