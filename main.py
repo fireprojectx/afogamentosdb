@@ -5,6 +5,9 @@ import requests
 from io import StringIO
 import os
 from sqlalchemy import create_engine
+from sqlalchemy import text
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 
 app = FastAPI()
 
@@ -89,8 +92,11 @@ def exportar_csv():
     )
 
 @app.get("/total_obitos")
-def soma_obitos():
-    with engine.connect() as conn:
-        result = conn.execute(text('SELECT SUM("Óbitos") FROM obitos'))
-        soma = result.scalar()
-    return JSONResponse(content={"total_obitos": soma})
+def total_obitos():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('SELECT SUM("Óbitos") FROM obitos'))
+            total = result.scalar()
+        return {"total_obitos": total}
+    except SQLAlchemyError as e:
+        return JSONResponse(status_code=500, content={"erro": str(e)})
