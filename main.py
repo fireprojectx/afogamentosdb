@@ -17,14 +17,14 @@ engine = create_engine(DATABASE_URL)
 @app.get("/dados_afogamentos")
 def get_dados():
     urls = {
-        ("Menor de 1 ano", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13132110_14_8_2.csv",
-        ("1 a 4 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13130210_14_8_2.csv",
-        ("5 a 9 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13123610_14_8_2.csv",
-        ("10 a 14 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13121610_14_8_2.csv",
-        ("15 a 19 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16022510_14_8_2.csv",
-        ("20 a 29 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13110610_14_8_2.csv",
-        ("30 a 39 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13103710_14_8_2.csv",
-        ("40 a 49 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13101310_14_8_2.csv",
+        ("Menor de 1 ano", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11231710_14_8_2.csv",
+        ("1 a 4 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11263710_14_8_2.csv",
+        ("5 a 9 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11275410_14_8_2.csv",
+        ("10 a 14 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11285610_14_8_2.csv",
+        ("15 a 19 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11293110_14_8_2.csv",
+        ("20 a 29 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11301210_14_8_2.csv",
+        ("30 a 39 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11301210_14_8_2.csv",
+        ("40 a 49 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A11362010_14_8_2.csv",
         ("50 a 59 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13093410_14_8_2.csv",
         ("60 a 69 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13090210_14_8_2.csv",
         ("70 a 79 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13054010_14_8_2.csv",
