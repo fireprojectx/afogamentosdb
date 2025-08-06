@@ -21,12 +21,12 @@ def get_dados():
         ("1 a 4 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16240910_14_8_2.csv",
         ("5 a 9 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16243510_14_8_2.csv",
         ("10 a 14 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16375810_14_8_2.csv",
-        ("15 a 19 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16383910_14_8_2.csv",
+        ("15 a 19 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A10394910_14_8_2.csv",
         ("20 a 29 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16391710_14_8_2.csv",
         ("30 a 39 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16394710_14_8_2.csv",
         ("40 a 49 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16401610_14_8_2.csv",
         ("50 a 59 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16404610_14_8_2.csv",
-        ("60 a 69 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16411210_14_8_2.csv",
+        ("60 a 69 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A10424610_14_8_2.csv",
         ("70 a 79 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16413210_14_8_2.csv",
         ("80 e mais", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16415110_14_8_2.csv",
         ("Idade ignorada", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16421310_14_8_2.csv",
@@ -41,7 +41,7 @@ def get_dados():
         ("50 a 59 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A16495910_14_8_2.csv",
         ("60 a 69 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A16501910_14_8_2.csv",
         ("70 a 79 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A16503610_14_8_2.csv",
-        ("80 e mais", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A16510110_14_8_2.csv",
+        ("80 e mais", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A10502810_14_8_2.csv",
         ("Idade ignorada", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A16512010_14_8_2.csv",
     }
 
