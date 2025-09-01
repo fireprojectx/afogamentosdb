@@ -27,7 +27,7 @@ def get_dados():
         ("40 a 49 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16401610_14_8_2.csv",
         ("50 a 59 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16404610_14_8_2.csv",
         ("60 a 69 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A10424610_14_8_2.csv",
-        ("70 a 79 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16413210_14_8_2.csv",
+        ("70 a 79 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A14050710_14_8_2.csv",
         ("80 e mais", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16415110_14_8_2.csv",
         ("Idade ignorada", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16421310_14_8_2.csv",
         ("Menor de 1 ano", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A16464010_14_8_2.csv",
