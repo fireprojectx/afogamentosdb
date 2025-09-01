@@ -18,7 +18,7 @@ engine = create_engine(DATABASE_URL)
 def get_dados():
     urls = {
         ("Menor de 1 ano", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A13593810_14_8_2.csv",
-        ("1 a 4 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16240910_14_8_2.csv",
+        ("1 a 4 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A14090010_14_8_2.csv",
         ("5 a 9 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16243510_14_8_2.csv",
         ("10 a 14 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16375810_14_8_2.csv",
         ("15 a 19 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A10394910_14_8_2.csv",
