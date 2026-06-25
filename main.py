@@ -1,52 +1,50 @@
-"""API opcional do afogamentosdb (FastAPI).
-
-Serve o obitos.csv (gerado por extrair.py / pelo GitHub Action). Não exige banco.
-- GET /              status
-- GET /atualizar     refaz a extração ao vivo do TabNet e regrava obitos.csv
-- GET /dados         JSON paginado
-- GET /exportar_csv  download do CSV
-"""
-import os
-
-import pandas as pd
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import Response, JSONResponse
+import pandas as pd
+import os
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 
 import extrair as ex
 
-app = FastAPI(title="afogamentosdb", description="Óbitos por afogamento MG (SIM/TabNet)")
-CSV = "obitos.csv"
+app = FastAPI()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
 
-@app.get("/")
-def root():
-    existe = os.path.exists(CSV)
-    return {"ok": True, "fonte": "TabNet-MG / SIM (POST dinâmico)",
-            "csv_disponivel": existe,
-            "raw": "https://raw.githubusercontent.com/fireprojectx/afogamentosdb/main/obitos.csv"}
-
-
-@app.get("/atualizar")
-def atualizar():
+@app.get("/dados_afogamentos")
+def get_dados():
     df = ex.extrair()
     if df.empty:
         return JSONResponse(status_code=502, content={"erro": "TabNet não retornou dados"})
-    df.to_csv(CSV, index=False, encoding="utf-8")
-    return {"status": "atualizado", "linhas": len(df), "obitos": int(df["Óbitos"].sum())}
+    df.to_sql("obitos", engine, if_exists="replace", index=False)
+    return {"status": "Dados salvos no banco de dados PostgreSQL com sucesso."}
 
 
-@app.get("/dados")
-def dados(limite: int = 100, offset: int = 0):
-    if not os.path.exists(CSV):
-        return JSONResponse(status_code=404, content={"erro": "rode /atualizar primeiro"})
-    df = pd.read_csv(CSV)
-    return {"total": len(df), "dados": df.iloc[offset:offset + limite].to_dict(orient="records")}
+@app.get("/consultar_dados")
+def consultar_dados(limite: int = 100, offset: int = 0):
+    query = f"SELECT * FROM obitos LIMIT {limite} OFFSET {offset}"
+    df = pd.read_sql(query, engine)
+    return {"dados": df.to_dict(orient="records")}
 
 
 @app.get("/exportar_csv")
 def exportar_csv():
-    if not os.path.exists(CSV):
-        return JSONResponse(status_code=404, content={"erro": "rode /atualizar primeiro"})
-    with open(CSV, encoding="utf-8") as f:
-        return Response(content=f.read(), media_type="text/csv",
-                        headers={"Content-Disposition": "attachment; filename=obitos.csv"})
+    df = pd.read_sql("SELECT * FROM obitos", engine)
+    return Response(
+        content=df.to_csv(index=False),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=obitos.csv"},
+    )
+
+
+@app.get("/total_obitos")
+def total_obitos():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('SELECT SUM("Óbitos") FROM obitos'))
+            total = result.scalar()
+        return {"total_obitos": total}
+    except SQLAlchemyError as e:
+        return JSONResponse(status_code=500, content={"erro": str(e)})
