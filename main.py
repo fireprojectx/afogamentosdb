@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import Response, JSONResponse
 import pandas as pd
+import io
 import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
@@ -20,6 +21,14 @@ def get_dados():
         return JSONResponse(status_code=502, content={"erro": "TabNet não retornou dados"})
     df.to_sql("obitos", engine, if_exists="replace", index=False)
     return {"status": "Dados salvos no banco de dados PostgreSQL com sucesso."}
+
+
+@app.post("/importar_csv")
+async def importar_csv(file: UploadFile = File(...)):
+    content = await file.read()
+    df = pd.read_csv(io.BytesIO(content))
+    df.to_sql("obitos", engine, if_exists="replace", index=False)
+    return {"status": "importado", "linhas": len(df), "obitos": int(df["Óbitos"].sum())}
 
 
 @app.get("/consultar_dados")

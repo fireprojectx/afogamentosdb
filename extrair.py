@@ -81,3 +81,26 @@ def extrair() -> pd.DataFrame:
     if not todos:
         return pd.DataFrame()
     return pd.concat(todos, ignore_index=True)
+
+
+if __name__ == "__main__":
+    _RAILWAY = "https://web-production-76ab9.up.railway.app"
+    _CSV = "obitos.csv"
+
+    print("Extraindo dados do TabNet...")
+    df = extrair()
+    if df.empty:
+        print("Nenhum dado retornado — abortando.")
+        raise SystemExit(1)
+
+    df.to_csv(_CSV, index=False, encoding="utf-8")
+    print(f"Salvo {_CSV} com {len(df)} linhas.")
+
+    print("Enviando CSV ao Railway para atualizar o banco...")
+    with open(_CSV, "rb") as f:
+        resp = requests.post(
+            f"{_RAILWAY}/importar_csv",
+            files={"file": ("obitos.csv", f, "text/csv")},
+            timeout=120,
+        )
+    print(f"Status Railway: {resp.status_code} — {resp.text}")
