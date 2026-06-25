@@ -2,7 +2,7 @@
 
 API de óbitos por afogamento em Minas Gerais, com dados extraídos do TabNet-MG/SIM (CID-10 W65–W74).
 
-**Base URL:** `https://web-production-76ab9.up.railway.app`
+**Base URL:** `https://web-production-0c693.up.railway.app`
 
 ---
 
@@ -49,7 +49,7 @@ O banco é atualizado **toda segunda-feira às 06:00 UTC (03:00 horário de Bras
 Para forçar uma extração diretamente pelo Railway (sem passar pelo GitHub Actions):
 
 ```bash
-curl -X GET https://web-production-76ab9.up.railway.app/dados_afogamentos
+curl -X GET https://web-production-0c693.up.railway.app/dados_afogamentos
 ```
 
 Aguarde o retorno — a extração pode levar alguns minutos.

@@ -84,7 +84,7 @@ def extrair() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    _RAILWAY = "https://web-production-76ab9.up.railway.app"
+    _RAILWAY = "https://web-production-0c693.up.railway.app"
     _CSV = "obitos.csv"
 
     print("Extraindo dados do TabNet...")
