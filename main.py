@@ -1,102 +1,52 @@
-from fastapi import FastAPI
-from fastapi.responses import Response
-import pandas as pd
-import requests
-from io import StringIO
+"""API opcional do afogamentosdb (FastAPI).
+
+Serve o obitos.csv (gerado por extrair.py / pelo GitHub Action). Não exige banco.
+- GET /              status
+- GET /atualizar     refaz a extração ao vivo do TabNet e regrava obitos.csv
+- GET /dados         JSON paginado
+- GET /exportar_csv  download do CSV
+"""
 import os
-from sqlalchemy import create_engine
-from sqlalchemy import text
-from fastapi.responses import JSONResponse
-from sqlalchemy.exc import SQLAlchemyError
 
-app = FastAPI()
+import pandas as pd
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse, Response
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-engine = create_engine(DATABASE_URL)
+import extrair as ex
 
-@app.get("/dados_afogamentos")
-def get_dados():
-    urls = {
-        ("Menor de 1 ano", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A15561110_14_8_2.csv",
-        ("1 a 4 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A15570810_14_8_2.csv",
-        ("5 a 9 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A15573810_14_8_2.csv",
-        ("10 a 14 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A15581210_14_8_2.csv",
-        ("15 a 19 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A15584110_14_8_2.csv",
-        ("20 a 29 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A15590710_14_8_2.csv",
-        ("30 a 39 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16011510_14_8_2.csv",
-        ("40 a 49 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16014010_14_8_2.csv",
-        ("50 a 59 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16020510_14_8_2.csv",
-        ("60 a 69 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16022510_14_8_2.csv",
-        ("70 a 79 anos", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16025610_14_8_2.csv",
-        ("80 e mais", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16031510_14_8_2.csv",
-        ("Idade ignorada", "Masculino"): "http://tabnet.saude.mg.gov.br/csv/A16033410_14_8_2.csv",
-        ("Menor de 1 ano", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15463510_14_8_2.csv",
-        ("1 a 4 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15470710_14_8_2.csv",
-        ("5 a 9 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15472510_14_8_2.csv",
-        ("10 a 14 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15474810_14_8_2.csv",
-        ("15 a 19 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15481110_14_8_2.csv",
-        ("20 a 29 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15482910_14_8_2.csv",
-        ("30 a 39 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15484910_14_8_2.csv",
-        ("40 a 49 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15494010_14_8_2.csv",
-        ("50 a 59 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15501310_14_8_2.csv",
-        ("60 a 69 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15504910_14_8_2.csv",
-        ("70 a 79 anos", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15510810_14_8_2.csv",
-        ("80 e mais", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15513110_14_8_2.csv",
-        ("Idade ignorada", "Feminino"): "http://tabnet.saude.mg.gov.br/csv/A15515110_14_8_2.csv",
-    }
+app = FastAPI(title="afogamentosdb", description="Óbitos por afogamento MG (SIM/TabNet)")
+CSV = "obitos.csv"
 
-    todos_dfs = []
 
-    for (faixa, sexo), url in urls.items():
-        try:
-            r = requests.get(url)
-            r.encoding = 'latin1'
-            df = pd.read_csv(StringIO(r.text), sep=";", skiprows=6, skipfooter=8, engine="python")
-            if "Total" in df.columns:
-                df.drop(columns=["Total"], inplace=True)
-            df.replace("-", 0, inplace=True)
-            df[['Codigo municipio', 'municipio']] = df['Município'].str.extract(r'"?(\d+)"?\s*(.*)')
-            df.drop(columns=["Município"], inplace=True)
-            df_long = df.melt(id_vars=["Codigo municipio", "municipio"], var_name="mes_ano", value_name="Óbitos")
-            df_long["mes_ano"] = df_long["mes_ano"].str.replace(r"[.]{2}", "", regex=True)
-            df_long[["mês", "ano"]] = df_long["mes_ano"].str.extract(r'(\w+)\/(\d{4})')
-            df_long = df_long.dropna(subset=["Codigo municipio", "municipio"])
-            df_long["Óbitos"] = pd.to_numeric(df_long["Óbitos"], errors="coerce").fillna(0).astype(int)
-            df_long["sexo"] = sexo
-            df_long["faixa etária"] = faixa
-            df_final = df_long[["Codigo municipio", "municipio", "mês", "ano", "sexo", "faixa etária", "Óbitos"]]
-            todos_dfs.append(df_final)
-        except Exception as e:
-            print(f"Erro ao processar {faixa}, {sexo}: {e}")
-            continue
+@app.get("/")
+def root():
+    existe = os.path.exists(CSV)
+    return {"ok": True, "fonte": "TabNet-MG / SIM (POST dinâmico)",
+            "csv_disponivel": existe,
+            "raw": "https://raw.githubusercontent.com/fireprojectx/afogamentosdb/main/obitos.csv"}
 
-    df_total = pd.concat(todos_dfs, ignore_index=True)
-    df_total.to_sql("obitos", engine, if_exists="replace", index=False)
 
-    return {"status": "Dados salvos no banco de dados PostgreSQL com sucesso."}
+@app.get("/atualizar")
+def atualizar():
+    df = ex.extrair()
+    if df.empty:
+        return JSONResponse(status_code=502, content={"erro": "TabNet não retornou dados"})
+    df.to_csv(CSV, index=False, encoding="utf-8")
+    return {"status": "atualizado", "linhas": len(df), "obitos": int(df["Óbitos"].sum())}
 
-@app.get("/consultar_dados")
-def consultar_dados(limite: int = 100, offset: int = 0):
-    query = f"SELECT * FROM obitos LIMIT {limite} OFFSET {offset}"
-    df = pd.read_sql(query, engine)
-    return {"dados": df.to_dict(orient="records")}
+
+@app.get("/dados")
+def dados(limite: int = 100, offset: int = 0):
+    if not os.path.exists(CSV):
+        return JSONResponse(status_code=404, content={"erro": "rode /atualizar primeiro"})
+    df = pd.read_csv(CSV)
+    return {"total": len(df), "dados": df.iloc[offset:offset + limite].to_dict(orient="records")}
 
 
 @app.get("/exportar_csv")
 def exportar_csv():
-    df = pd.read_sql("SELECT * FROM obitos", engine)
-    return Response(
-        content=df.to_csv(index=False),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=obitos.csv"}
-    )
-
-@app.get("/total_obitos")
-def total_obitos():
-    try:
-        with engine.connect() as conn:
-            result = conn.execute(text('SELECT SUM("Óbitos") FROM obitos'))
-            total = result.scalar()
-        return {"total_obitos": total}
-    except SQLAlchemyError as e:
-        return JSONResponse(status_code=500, content={"erro": str(e)})
+    if not os.path.exists(CSV):
+        return JSONResponse(status_code=404, content={"erro": "rode /atualizar primeiro"})
+    with open(CSV, encoding="utf-8") as f:
+        return Response(content=f.read(), media_type="text/csv",
+                        headers={"Content-Disposition": "attachment; filename=obitos.csv"})
