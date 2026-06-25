@@ -1,0 +1,28 @@
+name: Atualizar dados TabNet
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'        # toda segunda-feira, 06:00 UTC
+  workflow_dispatch: {}        # permite rodar manualmente pelo botão
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pandas
+      - name: Extrair do TabNet
+        run: python extrair.py
+      - name: Commitar obitos.csv
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add obitos.csv
+          git commit -m "Atualiza obitos.csv ($(date +%F))" || echo "sem mudancas"
+          git push
